@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: boostwithme
+    runtime: node
+    plan: 0.5c-512mb
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: boostwithme-db
+          property: connectionString
+      - key: DATABASE_SSL
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: APP_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: EMAIL_WEBHOOK_URL
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: ADMIN_EMAIL
+        value: danyellsdave7@gmail.com
+      - key: ADMIN_NAME
+        value: David Daniel
+      - key: ADMIN_PHONE
+        value: "08144594011"
+      - key: SUPPORT_EMAIL
+        value: boostwithme7@gmail.com
+      - key: DOMAIN
+        value: boostwithme.com
+
+databases:
+  - name: boostwithme-db
+    plan: 0.1c-256mb
+    connectionPool: pgbouncer

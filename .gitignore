@@ -1,0 +1,6 @@
+node_modules/
+.env
+boostwithme.db
+boostwithme.db-shm
+boostwithme.db-wal
+npm-debug.log*
