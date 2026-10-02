@@ -151,6 +151,17 @@ app.get("/api/admin/orders",auth,admin,async(_req,res)=>{const o=await many(`SEL
 const statusSchema=z.object({status:z.enum(["pending_payment","processing","in_progress","completed","cancelled","refunded"]),note:z.string().max(500).optional()});
 app.patch("/api/admin/orders/:publicId/status",auth,admin,async(req,res)=>{const p=statusSchema.safeParse(req.body);if(!p.success)return res.status(400).json({error:"Invalid status."});const order=await one("SELECT * FROM orders WHERE public_id=$1",[req.params.publicId]);if(!order)return res.status(404).json({error:"Order not found"});await tx(async client=>{await client.query("UPDATE orders SET status=$1,updated_at=now() WHERE id=$2",[p.data.status,order.id]);await client.query("INSERT INTO order_events(order_id,status,note) VALUES($1,$2,$3)",[order.id,p.data.status,p.data.note||"Status updated by admin."]);});await audit(req.user,"admin.order_status_changed","order",order.public_id,`status=${p.data.status}`);res.json({ok:true});});
 
-app.get(/.*/,(req,res)=>{if(req.path.startsWith("/api/"))return res.status(404).json({error:"Not found"});res.sendFile(path.join(__dirname,"index.html"));
+app.get(/.*/,(req,res)=>{
+  if(req.path.startsWith("/api/")){
+    return res.status(404).json({error:"Not found"});
+  }
 
-initDatabase().then(()=>app.listen(PORT,()=>console.log(`BOOSTWITHME running at ${APP_URL} using PostgreSQL`))).catch(e=>{console.error("Database initialization failed:",e);process.exit(1);});
+  res.sendFile(path.join(__dirname,"index.html"));
+});
+
+initDatabase()
+  .then(()=>app.listen(PORT,()=>console.log(`BOOSTWITHME running at ${APP_URL} using PostgreSQL`)))
+  .catch(e=>{
+    console.error("Database initialization failed:",e);
+    process.exit(1);
+  });
