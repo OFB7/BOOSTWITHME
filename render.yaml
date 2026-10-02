@@ -2,7 +2,7 @@ services:
   - type: web
     name: boostwithme
     runtime: node
-    plan: 0.5c-512mb
+    plan: free
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
@@ -40,5 +40,5 @@ services:
 
 databases:
   - name: boostwithme-db
-    plan: 0.1c-256mb
+    plan: feee
     connectionPool: pgbouncer
