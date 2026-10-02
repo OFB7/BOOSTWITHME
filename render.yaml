@@ -40,5 +40,5 @@ services:
 
 databases:
   - name: boostwithme-db
-    plan: feee
+    plan: free
   
