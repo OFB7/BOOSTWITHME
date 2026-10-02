@@ -56,8 +56,7 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cookieParser());
 app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use(express.urlencoded({ extended: false }));
-app.get("/styles.css", (_req, res) => res.sendFile(path.join(__dirname, "styles.css")));
-app.get("/app.js", (_req, res) => res.sendFile(path.join(__dirname, "app.js")));
+app.get("/styles.css", (_req, res) => res.sendFile(path.join(__dirname, "styles.css")));app.get("/app.js", (_req, res) => res.sendFile(path.join(__dirname, "app.js")));
 
 const authAttempts = new Map();
 function authRateLimit(req, res, next) {
