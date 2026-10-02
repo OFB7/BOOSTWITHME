@@ -62,9 +62,71 @@ function openOrder(id){
   openModal(`<h2>Order ${esc(s.name)}</h2><p>${esc(s.description)}</p><div id="orderError"></div>
     <div class="field"><label>Package</label><select id="package"><option>Starter</option><option>Growth</option><option>Pro</option></select></div>
     <div class="field"><label>Profile / content URL</label><input id="target" placeholder="https://instagram.com/..."></div>
-    <button class="btn primary full" onclick="createOrder(${s.id})">Create order</button><p class="hint">You’ll be asked to log in before an order is created.</p>`)
+  <button type="button" class="btn primary full" id="createOrderBtn" onclick="createOrder(${s.id})">Create order</button><p class="hint">You’ll be asked to log in before an order is created.</p>`)
 }
 async function createOrder(serviceId){
+  const errorBox=document.querySelector('#orderError');
+  const btn=document.querySelector('#createOrderBtn');
+
+  try{
+    if(btn){
+      btn.disabled=true;
+      btn.textContent='Creating order...';
+    }
+
+    if(errorBox) errorBox.innerHTML='';
+
+    const packageEl=document.querySelector('#package');
+    const targetEl=document.querySelector('#target');
+
+    if(!packageEl || !targetEl){
+      throw new Error('Order form is not ready. Please close it and try again.');
+    }
+
+    const targetUrl=targetEl.value.trim();
+
+    if(!targetUrl){
+      throw new Error('Please enter your profile or content URL.');
+    }
+
+    const d=await api('/api/orders',{
+      method:'POST',
+      body:JSON.stringify({
+        serviceId:Number(serviceId),
+        packageName:packageEl.value,
+        targetUrl
+      })
+    });
+
+    closeModal();
+    await showDashboard();
+    await openPayment(d.order.public_id);
+
+  }catch(e){
+    console.error('BOOSTWITHME order error:',e);
+
+    if(e.message && e.message.toLowerCase().includes('authentication')){
+      openAuth('login');
+      return;
+    }
+
+    if(errorBox){
+      errorBox.innerHTML=`<div class="error">${esc(e.message||'Unable to create order.')}</div>`;
+    }else{
+      openModal(
+        `<h2>Order error</h2>
+         <div class="error">${esc(e.message||'Unable to create order.')}</div>
+         <button class="btn dark full" onclick="closeModal()">Close</button>`
+      );
+    }
+
+  }finally{
+    if(btn){
+      btn.disabled=false;
+      btn.textContent='Create order';
+    }
+  }
+}
   try{const d=await api('/api/orders',{method:'POST',body:JSON.stringify({serviceId,packageName:document.querySelector('#package').value,targetUrl:document.querySelector('#target').value})});closeModal();await showDashboard();openPayment(d.order.public_id)}
   catch(e){if(e.message.includes('Authentication')){openAuth('login');return}document.querySelector('#orderError').innerHTML=`<div class="error">${esc(e.message)}</div>`}
 }
